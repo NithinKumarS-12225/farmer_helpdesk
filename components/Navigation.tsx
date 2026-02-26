@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { useRouter, usePathname, useParams } from 'next/navigation';
 import type { Locale } from '@/i18n.config';
+import { useTheme } from '@/lib/theme-context';
 import { getTranslation } from '@/lib/translations';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,43 +15,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Moon, Sun, Globe, Menu, X, Sprout } from 'lucide-react';
 
-interface NavigationProps {
-  locale: Locale;
-  router: AppRouterInstance;
-  pathname: string;
-}
-
-export default function Navigation({ locale, router, pathname }: NavigationProps) {
-  const [isDark, setIsDark] = useState(false);
+export default function Navigation() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useParams();
+  const locale = (params?.locale as Locale) || 'en';
+  const { isDark, toggleTheme, mounted } = useTheme();
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    setIsDark(isDarkMode);
-
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    });
-
-    observer.observe(document.documentElement, { attributes: true });
-    return () => observer.disconnect();
-  }, []);
 
   const t = getTranslation(locale);
-
-  const toggleTheme = () => {
-    const newDarkMode = !isDark;
-    setIsDark(newDarkMode);
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  };
 
   const handleLanguageChange = (newLocale: Locale) => {
     const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
@@ -65,8 +39,6 @@ export default function Navigation({ locale, router, pathname }: NavigationProps
     { href: 'schemes', label: t.nav.schemes },
     { href: 'account', label: t.nav.account },
   ];
-
-  if (!mounted) return null;
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

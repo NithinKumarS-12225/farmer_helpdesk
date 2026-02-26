@@ -40,7 +40,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#10b981" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#059669" media="(prefers-color-scheme: dark)" />
       </head>
-      <body className="font-sans antialiased">
+      <body className="bg-background text-foreground">
         {children}
         <Analytics />
       </body>
