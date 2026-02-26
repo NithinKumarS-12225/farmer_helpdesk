@@ -46,9 +46,8 @@ export default function SchemesPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    params.then((p) => setLocale(p.locale as Locale));
     setMounted(true);
-  }, [params]);
+  }, []);
 
   const t = getTranslation(locale);
 

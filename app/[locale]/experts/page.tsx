@@ -29,6 +29,11 @@ export default function ExpertsPage() {
   const locale = (params?.locale as Locale) || 'en';
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const t = getTranslation(locale);
 

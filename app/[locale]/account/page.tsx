@@ -22,7 +22,7 @@ export default function AccountPage() {
   const routerInstance = useRouter();
   const routerParams = useParams();
   const locale = (routerParams?.locale as Locale) || 'en';
-  const { toggleTheme } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [profile, setProfile] = useState<UserProfile>({
     name: '',
