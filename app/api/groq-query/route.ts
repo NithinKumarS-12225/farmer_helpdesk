@@ -28,6 +28,8 @@ export async function POST(request: Request) {
 
     const systemMessage = `${AGRICULTURAL_SYSTEM_PROMPT}
 
+IMPORTANT: Format your response as a concise point-wise list with 3-6 main points. Each point should be clear, practical, and actionable. Use bullet points or numbering. Keep each point brief and to the point. Avoid lengthy paragraphs.
+
 Here are some example queries and answers for context:
 ${contextStr}
 

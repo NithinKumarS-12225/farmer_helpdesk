@@ -7,7 +7,7 @@ import { getTranslation } from '@/lib/translations';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Loader, Send, MessageCircle, Trash2 } from 'lucide-react';
+import { Loader, Send, MessageCircle, Trash2, Copy, Check } from 'lucide-react';
 
 interface ChatMessage {
   id: string;
@@ -23,7 +23,21 @@ export default function FarmerPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const suggestedQuestions = [
+    locale === 'en' ? 'How to manage crop pests?' : locale === 'hi' ? 'फसल कीटों को कैसे नियंत्रित करें?' : 'ಬೆಳೆ ಕೀಟಗಳನ್ನು ಹೇಗೆ ನಿಯಂತ್ರಿಸುವುದು?',
+    locale === 'en' ? 'Best time to irrigate crops' : locale === 'hi' ? 'फसलों को पानी देने का सही समय' : 'ಬೆಳೆಗಳಿಗೆ ನೀರಾವರಣದ ಸರಿಯ ಸಮಯ',
+    locale === 'en' ? 'Soil testing importance' : locale === 'hi' ? 'मिट्टी परीक्षण का महत्व' : 'ಮಣ್ಣಿನ ಪರೀಕ್ষೆಯ ಪ್ರಾಮುಖ್ಯತೆ',
+    locale === 'en' ? 'Organic farming methods' : locale === 'hi' ? 'जैविक खेती की विधियाँ' : 'ಜೈವಿಕ ಕೃಷಿ ವಿಧಾನಗಳು',
+  ];
+
+  const copyToClipboard = (text: string, messageId: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(messageId);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   useEffect(() => {
     // Load chat history from localStorage
@@ -124,10 +138,28 @@ export default function FarmerPage() {
               {/* Messages Container */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {messages.length === 0 && (
-                  <div className="flex h-full items-center justify-center text-center">
+                  <div className="flex h-full flex-col items-center justify-center text-center">
                     <div>
                       <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-                      <p className="text-muted-foreground">Start by asking a farming question...</p>
+                      <p className="text-muted-foreground mb-6">Start by asking a farming question...</p>
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground mb-3">Suggested Questions:</p>
+                        {suggestedQuestions.map((question, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setInput(question);
+                              setTimeout(() => {
+                                const form = document.querySelector('form');
+                                form?.dispatchEvent(new Event('submit', { bubbles: true }));
+                              }, 0);
+                            }}
+                            className="block w-full text-left text-xs p-2 rounded border border-primary/20 hover:bg-primary/10 hover:border-primary/50 transition-colors text-muted-foreground hover:text-foreground truncate"
+                          >
+                            {question}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -138,16 +170,48 @@ export default function FarmerPage() {
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-xs rounded-lg px-4 py-2 ${
+                      className={`max-w-md rounded-lg px-4 py-3 group ${
                         message.role === 'user'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-card border border-border text-foreground'
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
-                      <span className="text-xs opacity-70 mt-1 block">
-                        {message.timestamp.toLocaleTimeString(locale)}
-                      </span>
+                      {message.role === 'assistant' ? (
+                        <div className="text-sm space-y-2">
+                          {message.content.split('\n').map((line, idx) => {
+                            if (!line.trim()) return null;
+                            return (
+                              <div key={idx}>
+                                {line.trim().startsWith('-') || line.trim().startsWith('•') || /^\d+\./.test(line.trim()) ? (
+                                  <p className="text-sm">{line.trim()}</p>
+                                ) : (
+                                  <p className="text-sm">• {line.trim()}</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="text-sm">{message.content}</p>
+                      )}
+                      <div className="flex items-center justify-between mt-2 gap-2">
+                        <span className="text-xs opacity-70">
+                          {message.timestamp.toLocaleTimeString(locale)}
+                        </span>
+                        {message.role === 'assistant' && (
+                          <button
+                            onClick={() => copyToClipboard(message.content, message.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+                            title="Copy response"
+                          >
+                            {copiedId === message.id ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -9,7 +9,7 @@ import { getTranslation } from '@/lib/translations';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Moon, Sun, Globe, User, Bell, Lock, LogOut } from 'lucide-react';
+import { Moon, Sun, Globe, User, Bell, Lock, LogOut, Cloud, Star } from 'lucide-react';
 
 interface UserProfile {
   name: string;
@@ -166,9 +166,18 @@ export default function AccountPage() {
 
               <div className="space-y-4">
                 {/* Theme Toggle */}
-                <div className="flex items-center justify-between rounded-lg border border-border p-4">
+                <div className="flex items-center justify-between rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    {isDark ? <Moon className="h-5 w-5 text-primary" /> : <Sun className="h-5 w-5 text-primary" />}
+                    {isDark ? (
+                      <div className="relative">
+                        <Sun className="h-5 w-5 text-yellow-500" />
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <Cloud className="h-5 w-5 text-slate-600" />
+                        <Star className="h-3 w-3 text-yellow-400 absolute -top-1 -right-1" />
+                      </div>
+                    )}
                     <div>
                       <p className="font-medium text-foreground">{t.account.theme}</p>
                       <p className="text-sm text-muted-foreground">
@@ -182,9 +191,13 @@ export default function AccountPage() {
                 </div>
 
                 {/* Language Selection */}
-                <div className="rounded-lg border border-border p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Globe className="h-5 w-5 text-primary" />
+                <div className="rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                      <span className="text-sm font-bold text-primary">
+                        {locale === 'en' ? '🌍' : locale === 'hi' ? '🇮🇳' : '🇮🇳'}
+                      </span>
+                    </div>
                     <div>
                       <p className="font-medium text-foreground">{t.account.language}</p>
                       <p className="text-sm text-muted-foreground">Choose your preferred language</p>
@@ -196,11 +209,16 @@ export default function AccountPage() {
                         key={loc}
                         variant={locale === loc ? 'default' : 'outline'}
                         onClick={() => handleLanguageChange(loc)}
-                        className="capitalize"
+                        className="text-sm font-semibold"
                       >
-                        {loc === 'en' ? 'English' : loc === 'hi' ? 'हिन्दी' : 'ಕನ್ನಡ'}
+                        {loc === 'en' ? 'EN' : loc === 'hi' ? 'HI' : 'KN'}
                       </Button>
                     ))}
+                  </div>
+                  <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                    <p>• English: {locale === 'en' ? '✓ Selected' : 'Available'}</p>
+                    <p>• हिन्दी: {locale === 'hi' ? '✓ Selected' : 'उपलब्ध'}</p>
+                    <p>• ಕನ್ನಡ: {locale === 'kn' ? '✓ ಆಯ್ದ' : 'ಲಭ್ಯ'}</p>
                   </div>
                 </div>
 
@@ -216,26 +234,6 @@ export default function AccountPage() {
                     className="h-5 w-5 rounded border-border cursor-pointer"
                   />
                 </div>
-              </div>
-            </Card>
-
-            {/* Privacy & Security */}
-            <Card className="p-6">
-              <h2 className="mb-4 text-xl font-semibold text-foreground flex items-center gap-2">
-                <Lock className="h-5 w-5" />
-                {t.account.privacy}
-              </h2>
-
-              <div className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
-                  Change Password
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Delete Account
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Privacy Policy
-                </Button>
               </div>
             </Card>
 

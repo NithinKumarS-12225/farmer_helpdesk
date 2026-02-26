@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Moon, Sun, Globe, Menu, X, Sprout } from 'lucide-react';
+import { Moon, Sun, Globe, Menu, X, Sprout, Cloud, Star } from 'lucide-react';
 
 export default function Navigation() {
   const router = useRouter();
@@ -73,27 +73,58 @@ export default function Navigation() {
               size="icon"
               onClick={toggleTheme}
               aria-label="Toggle theme"
-              className="rounded-md"
+              className="rounded-md hover:bg-primary/10 relative group"
+              title={isDark ? 'Light Mode' : 'Dark Mode'}
             >
-              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {isDark ? (
+                <div className="relative">
+                  <Sun className="h-5 w-5 text-yellow-500 rotate-0 group-hover:rotate-12 transition-transform" />
+                </div>
+              ) : (
+                <div className="relative">
+                  <Cloud className="h-5 w-5 text-slate-600 group-hover:scale-110 transition-transform" />
+                  <Star className="h-3 w-3 text-yellow-400 absolute -top-1 -right-1" />
+                </div>
+              )}
             </Button>
 
             {/* Language Switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-md">
-                  <Globe className="h-5 w-5" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-md hover:bg-primary/10"
+                  title="Change Language"
+                >
+                  <div className="flex items-center justify-center">
+                    <span className="text-sm font-semibold">
+                      {locale === 'en' ? 'EN' : locale === 'hi' ? 'HI' : 'KN'}
+                    </span>
+                  </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleLanguageChange('en')}>
-                  English {locale === 'en' && '✓'}
+                <DropdownMenuItem 
+                  onClick={() => handleLanguageChange('en')}
+                  className="cursor-pointer"
+                >
+                  <span className="font-medium">English</span>
+                  {locale === 'en' && <span className="ml-2 text-primary font-bold">✓</span>}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleLanguageChange('hi')}>
-                  हिन्दी {locale === 'hi' && '✓'}
+                <DropdownMenuItem 
+                  onClick={() => handleLanguageChange('hi')}
+                  className="cursor-pointer"
+                >
+                  <span className="font-medium">हिन्दी</span>
+                  {locale === 'hi' && <span className="ml-2 text-primary font-bold">✓</span>}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleLanguageChange('kn')}>
-                  ಕನ್ನಡ {locale === 'kn' && '✓'}
+                <DropdownMenuItem 
+                  onClick={() => handleLanguageChange('kn')}
+                  className="cursor-pointer"
+                >
+                  <span className="font-medium">ಕನ್ನಡ</span>
+                  {locale === 'kn' && <span className="ml-2 text-primary font-bold">✓</span>}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -7,8 +7,9 @@ import { getTranslation } from '@/lib/translations';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import LoanCalculator from '@/components/LoanCalculator';
 import schemesData from '@/data/schemes.json';
-import { Search, FileText, DollarSign, Users, CheckCircle, ExternalLink } from 'lucide-react';
+import { Search, FileText, DollarSign, Users, CheckCircle, ExternalLink, Calculator } from 'lucide-react';
 
 interface Scheme {
   id: number;
@@ -43,6 +44,7 @@ export default function SchemesPage() {
   const [selectedType, setSelectedType] = useState('');
   const [showTab, setShowTab] = useState<'schemes' | 'loans'>('schemes');
   const [selectedScheme, setSelectedScheme] = useState<Scheme | null>(null);
+  const [showCalculator, setShowCalculator] = useState(false);
 
   const t = getTranslation(locale);
 
@@ -205,7 +207,15 @@ export default function SchemesPage() {
 
         {/* Loans Tab */}
         {showTab === 'loans' && (
-          <div className="grid gap-6 sm:grid-cols-2">
+          <>
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-foreground">Available Loan Programs</h2>
+              <Button onClick={() => setShowCalculator(true)} size="lg">
+                <Calculator className="mr-2 h-4 w-4" />
+                Calculate EMI
+              </Button>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2">
             {loans.map((loan) => (
               <Card key={loan.id} className="overflow-hidden">
                 <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-4 border-b border-border">
@@ -261,8 +271,12 @@ export default function SchemesPage() {
                 </div>
               </Card>
             ))}
-          </div>
+            </div>
+          </>
         )}
+
+        {/* Loan Calculator Modal */}
+        <LoanCalculator isOpen={showCalculator} onClose={() => setShowCalculator(false)} locale={locale} />
 
         {/* Scheme Detail Modal */}
         {selectedScheme && (

@@ -48,6 +48,11 @@ export default function MarketplacePage() {
 
   const t = getTranslation(locale);
   const { crops, landSizes, locations } = cropsData;
+  
+  // Create flat list of location options from locations array
+  const locationOptions = locations.flatMap((loc) =>
+    loc.districts.map((district) => `${district}, ${loc.state}`)
+  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
