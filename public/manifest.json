@@ -1,6 +1,6 @@
 {
-  "name": "Kisan Call Centre - Agricultural Helpdesk",
-  "short_name": "Kisan Call Centre",
+  "name": "Kisan Helpdesk - One-stop-solution for Farmers",
+  "short_name": "Kisan Helpdesk",
   "description": "AI-powered agricultural helpdesk with expert guidance, real-time weather, government schemes, and farmer marketplace",
   "start_url": "/",
   "scope": "/",

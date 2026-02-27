@@ -50,7 +50,7 @@ export default function Navigation() {
           {/* Logo */}
           <Link href={`/${locale}`} className="flex items-center gap-2 font-bold text-lg text-primary">
             <Sprout className="h-6 w-6" />
-            <span className="hidden sm:inline">Kisan Call Centre</span>
+            <span className="hidden sm:inline">Kisan Helpdesk</span>
           </Link>
 
           {/* Desktop Navigation */}

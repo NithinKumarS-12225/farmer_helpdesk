@@ -7,8 +7,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Kisan Call Centre - Agricultural Helpdesk',
-  description: 'AI-powered agricultural helpdesk with expert guidance, real-time weather, government schemes, and farmer marketplace',
+  title: 'Kisan Helpdesk - One-stop-solution for Farmers',
+  description: 'AI-powered agricultural helpdesk with expert guidance, real-time weather, government schemes, and farmer marketplace - Your one-stop solution for all farming needs',
   generator: 'v0.app',
   manifest: '/manifest.json',
   icons: {

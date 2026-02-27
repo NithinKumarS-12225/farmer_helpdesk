@@ -24,8 +24,8 @@ export default function Footer() {
                 <span className="text-white font-bold text-lg">K</span>
               </div>
               <div>
-                <h3 className="font-bold text-lg text-foreground">Kisan</h3>
-                <p className="text-xs text-muted-foreground">Agricultural Helpdesk</p>
+                <h3 className="font-bold text-lg text-foreground">Kisan Helpdesk</h3>
+                <p className="text-xs text-muted-foreground">One-stop-solution</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
@@ -69,7 +69,7 @@ export default function Footer() {
           {/* Left Side - Copyright & Info */}
           <div className="flex flex-col gap-3 text-sm text-muted-foreground">
             <p>
-              © 2026 Kisan Call Centre. All rights reserved by{' '}
+              © 2026 Kisan Helpdesk - One-stop-solution. All rights reserved by{' '}
               <span className="font-semibold text-foreground">BROGRAMMERS</span>.
             </p>
             <p className="flex items-center gap-2">
