@@ -8,12 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
 import { Sprout, Users, Truck, Cloud, FileText, Settings, Phone } from 'lucide-react';
-import dynamic from 'next/dynamic';
-
-const AICallAgentModal = dynamic(() => import('@/components/AICallAgentModal'), {
-  loading: () => null,
-  ssr: false
-});
 
 export default function HomePage() {
   const params = useParams();
@@ -84,7 +78,7 @@ export default function HomePage() {
           <p className="mt-4 text-xl text-muted-foreground sm:text-2xl">{t.home.subtitle}</p>
           <p className="mt-6 text-lg text-muted-foreground">{t.home.description}</p>
           <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <Button size="lg" className="w-full sm:w-auto bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2" onClick={() => setShowCallAgent(true)}>
+            <Button size="lg" className="w-full sm:w-auto bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2" disabled title="Coming soon">
               <Phone className="h-5 w-5" />
               Call AI Agent Now
             </Button>
@@ -160,10 +154,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* AI Call Agent Modal */}
-      <Suspense fallback={null}>
-        {showCallAgent && <AICallAgentModal isOpen={showCallAgent} onClose={() => setShowCallAgent(false)} locale={locale} />}
-      </Suspense>
+      {/* AI Call Agent - Coming Soon */}
     </div>
   );
 }
