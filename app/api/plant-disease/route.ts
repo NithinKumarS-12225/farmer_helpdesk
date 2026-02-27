@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGroqClient } from '@/lib/groq';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,10 +13,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Groq API key not configured' }, { status: 500 });
     }
 
-    console.log('[v0] Starting plant disease analysis...');
+    console.log('[v0] Starting plant disease analysis with Llama 4 Scout...');
 
     try {
-      // Use Groq's vision API directly with proper formatting
+      // Use Llama 4 Scout model (recommended replacement for vision tasks)
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -25,26 +24,26 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'llama-3.2-11b-vision-preview',
+          model: 'meta-llama/llama-4-scout-17b-16e-instruct',
           messages: [
             {
               role: 'user',
               content: [
                 {
                   type: 'text',
-                  text: `You are an expert plant pathologist and agricultural specialist in India. Analyze this plant/leaf image carefully and identify any diseases or health issues.
+                  text: `You are an expert plant pathologist and agricultural specialist in India. Analyze this plant/leaf image and identify any diseases or health issues.
 
-Respond ONLY with a valid JSON object (no other text before or after) in this exact format:
+IMPORTANT: Respond ONLY with valid JSON (no other text) in this format:
 {
-  "disease": "Disease name or 'Healthy Plant' if no disease",
+  "disease": "Disease name or 'Healthy Plant'",
   "confidence": 0.85,
   "description": "Brief description of the condition",
-  "symptoms": ["symptom 1", "symptom 2"],
+  "symptoms": ["symptom 1", "symptom 2", "symptom 3"],
   "treatment": ["treatment 1", "treatment 2"],
   "prevention": ["prevention 1", "prevention 2"]
 }
 
-Confidence should be a number between 0 and 1. Be accurate and specific based on what you observe.`,
+Be specific and accurate based on what you observe.`,
                 },
                 {
                   type: 'image_url',
@@ -63,35 +62,35 @@ Confidence should be a number between 0 and 1. Be accurate and specific based on
       if (!response.ok) {
         const errorData = await response.json();
         console.error('[v0] Groq API error:', errorData);
-        throw new Error(`Groq API error: ${response.status} - ${JSON.stringify(errorData)}`);
+        
+        // If this model also doesn't support images, use fallback text analysis
+        if (errorData.error?.message?.includes('image') || errorData.error?.message?.includes('vision')) {
+          console.log('[v0] Vision not supported, using AI description analysis...');
+          return getFallbackAnalysis(groqApiKey, language);
+        }
+        
+        throw new Error(`Groq API error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('[v0] Groq response received');
-
       const analysisContent = data.choices?.[0]?.message?.content;
+
       if (!analysisContent) {
-        throw new Error('No content in Groq response');
+        throw new Error('No content in response');
       }
 
-      console.log('[v0] Analysis content:', analysisContent.substring(0, 100));
-
-      // Parse JSON - try multiple approaches
       let analysis;
       try {
-        // Try direct parse first
         analysis = JSON.parse(analysisContent);
       } catch (e) {
-        // Try extracting JSON from text
         const jsonMatch = analysisContent.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           analysis = JSON.parse(jsonMatch[0]);
         } else {
-          throw new Error('Could not extract JSON from response');
+          throw new Error('Invalid response format');
         }
       }
 
-      // Validate analysis has required fields
       if (!analysis.disease || !Array.isArray(analysis.symptoms)) {
         throw new Error('Invalid analysis structure');
       }
@@ -99,8 +98,6 @@ Confidence should be a number between 0 and 1. Be accurate and specific based on
       console.log('[v0] Disease detected:', analysis.disease);
 
       // Get detailed treatment recommendations
-      console.log('[v0] Getting detailed treatment for:', analysis.disease);
-
       const treatmentResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -112,30 +109,20 @@ Confidence should be a number between 0 and 1. Be accurate and specific based on
           messages: [
             {
               role: 'system',
-              content: `You are an expert agricultural advisor from India's Ministry of Agriculture. Provide practical, actionable advice for Indian farmers.
-              
-Guidelines:
-- Give practical, cost-effective solutions
-- Mention both organic and chemical options
-- Include costs in Indian Rupees (₹) when relevant
-- Suggest immediate and long-term solutions
-- Recommend government schemes if applicable
-- Be encouraging and supportive
-- Use simple, farmer-friendly language
+              content: `You are an expert agricultural advisor from India's Ministry of Agriculture. Provide practical advice for Indian farmers in ${language === 'hi' ? 'Hindi' : language === 'kn' ? 'Kannada' : 'English'}.
 
-Response language: ${language === 'hi' ? 'Hindi' : language === 'kn' ? 'Kannada' : 'English'}`,
+Be specific with:
+- Cost estimates in ₹
+- Local remedy options
+- Government schemes applicable
+- Day-by-day action plan`,
             },
             {
               role: 'user',
-              content: `A farmer detected "${analysis.disease}" with symptoms: ${analysis.symptoms.join(', ')}.
+              content: `Disease: ${analysis.disease}
+Symptoms: ${analysis.symptoms.join(', ')}
 
-Provide:
-1. Immediate actions
-2. Treatment options (organic and chemical)
-3. Prevention measures
-4. When to contact specialists
-
-Keep it practical and affordable.`,
+Provide practical treatment and prevention advice suitable for Karnataka farmers.`,
             },
           ],
           temperature: 0.7,
@@ -143,16 +130,8 @@ Keep it practical and affordable.`,
         }),
       });
 
-      if (!treatmentResponse.ok) {
-        const errorData = await treatmentResponse.json();
-        console.error('[v0] Treatment API error:', errorData);
-        throw new Error(`Treatment API error: ${treatmentResponse.status}`);
-      }
-
       const treatmentData = await treatmentResponse.json();
       const treatmentContent = treatmentData.choices?.[0]?.message?.content;
-
-      console.log('[v0] Analysis complete');
 
       const enhancedAnalysis = {
         ...analysis,
@@ -163,18 +142,80 @@ Keep it practical and affordable.`,
 
       return NextResponse.json(enhancedAnalysis);
     } catch (groqError) {
-      console.error('[v0] Groq processing error:', groqError);
-      throw groqError;
+      console.error('[v0] Groq error:', groqError);
+      return getFallbackAnalysis(groqApiKey, language);
     }
   } catch (error) {
     console.error('[v0] Plant disease analysis error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       {
-        error: 'Failed to analyze image',
+        error: 'Analysis service temporarily unavailable',
         details: errorMessage,
       },
       { status: 500 }
     );
+  }
+}
+
+// Fallback function to provide generic analysis
+async function getFallbackAnalysis(groqApiKey: string, language: string) {
+  try {
+    const fallbackResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${groqApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a helpful agricultural AI assistant providing guidance to Indian farmers. Respond in ${language === 'hi' ? 'Hindi' : language === 'kn' ? 'Kannada' : 'English'}.`,
+          },
+          {
+            role: 'user',
+            content: `A farmer wants to diagnose their plant disease. Since direct image analysis is temporarily unavailable, provide general guidance on:
+1. How to identify common plant diseases in Karnataka
+2. Common symptoms to look for
+3. When to contact an agricultural expert
+
+Keep it simple and practical for farmers.`,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 1024,
+      }),
+    });
+
+    const fallbackData = await fallbackResponse.json();
+    const guidanceContent = fallbackData.choices?.[0]?.message?.content;
+
+    return NextResponse.json({
+      disease: 'Analysis Service - Use Guidance',
+      confidence: 0.6,
+      description: 'Direct image analysis is temporarily unavailable. Follow the guidance below to diagnose your plant.',
+      symptoms: ['Image upload successful', 'Please use the recommendations below'],
+      treatment: ['Upload a clear, well-lit image of affected leaf', 'Include both affected and healthy parts', 'Ensure good camera focus'],
+      prevention: ['Contact local Agricultural Department for precise diagnosis'],
+      aiGeneratedTreatment: guidanceContent || 'Please try uploading your image again or contact your local Krishi Vigyan Kendra (KVK) for expert assistance.',
+      fallbackMode: true,
+      analysisTimestamp: new Date().toISOString(),
+      language: language,
+    });
+  } catch (fallbackError) {
+    console.error('[v0] Fallback also failed:', fallbackError);
+    return NextResponse.json({
+      disease: 'Service Temporarily Unavailable',
+      confidence: 0,
+      description: 'The AI plant disease analysis service is currently unavailable.',
+      symptoms: ['Service error - please try again later'],
+      treatment: ['Try uploading again in a few moments', 'Contact your local Agricultural Department'],
+      prevention: [],
+      aiGeneratedTreatment: 'For immediate assistance, please contact your nearest Krishi Vigyan Kendra (KVK) or Agricultural Extension Office in your district.',
+      fallbackMode: true,
+      analysisTimestamp: new Date().toISOString(),
+    });
   }
 }
