@@ -1,4 +1,4 @@
-# Kisan Call Centre - AI-Powered Agricultural Helpdesk
+# Krushi sahay - AI-Powered Agricultural Helpdesk
 
 A comprehensive full-stack web application designed to empower Indian farmers with expert guidance, real-time weather analysis, government schemes information, marketplace services, and AI-powered query assistance.
 
